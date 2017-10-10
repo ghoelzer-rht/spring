@@ -31,23 +31,26 @@ spec:
 
               node("maven") {
                 stage("Checkout") {
-                  git url: "https://github.com/ghoelzer-rht/spring-enablement.git", branch: "solution", context_dir: "/lab4"
+                  git url: "https://github.com/ghoelzer-rht/spring-enablement.git", branch: "solution"
                 }
+
                 stage("Build Spring Boot JAR") {
-                  sh "mvn clean package -Popenshift"
-                  stash name:"jar", includes:"target/product-catalog.jar"
+                  sh "mvn clean fabric8:deploy -Popenshift --file lab4/pom.xml"
+                  stash name:"jar", includes:"lab4/target/product-catalog.jar"
                 }
               }
 
               node {
+                /*  
                 stage("Build Image") {
                   unstash name:"jar"
-                  sh "oc start-build product-catalog-s2i --from-file=target/product-catalog.jar
+                  sh "oc start-build product-catalog-s2i --from-file=target/product-catalog.jar"
                   openshiftVerifyBuild bldCfg: "product-catalog-s2i", waitTime: '20', waitUnit: 'min'
                 }
                 stage("Deploy") {
                   openshiftDeploy deploymentConfig: "product-catalog"
                 }
+                */
               }
            }
         } catch (err) {
