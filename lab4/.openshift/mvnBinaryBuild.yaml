@@ -1,0 +1,66 @@
+apiVersion: v1
+kind: BuildConfig
+metadata:
+  annotations:
+    pipeline.alpha.openshift.io/uses: '[{"name": "product-catalog", "namespace": "",
+      "kind": "DeploymentConfig"}]'
+  labels:
+    name: product-catalog-pipeline
+  name: product-catalog-pipeline
+spec:
+  nodeSelector: null
+  output: {}
+  postCommit: {}
+  resources: {}
+  runPolicy: Serial
+  source:
+    type: None
+  strategy:
+    jenkinsPipelineStrategy:
+      jenkinsfile: |-
+        try {
+           timeout(time: 20, unit: 'MINUTES') {
+              def appName="product-catalog"
+              def project=""
+
+              node {
+                stage("Initialize") {
+                  project = "product-catalog-demo"
+                }
+              }
+
+              node("maven") {
+                stage("Checkout") {
+                  git url: "https://github.com/ghoelzer-rht/spring-enablement.git", branch: "solution", context_dir: "/lab4"
+                }
+                stage("Build Spring Boot JAR") {
+                  sh "mvn clean package -Popenshift"
+                  stash name:"jar", includes:"target/product-catalog.jar"
+                }
+              }
+
+              node {
+                stage("Build Image") {
+                  unstash name:"jar"
+                  sh "oc start-build product-catalog-s2i --from-file=target/product-catalog.jar
+                  openshiftVerifyBuild bldCfg: "product-catalog-s2i", waitTime: '20', waitUnit: 'min'
+                }
+                stage("Deploy") {
+                  openshiftDeploy deploymentConfig: "product-catalog"
+                }
+              }
+           }
+        } catch (err) {
+           echo "in catch block"
+           echo "Caught: ${err}"
+           currentBuild.result = 'FAILURE'
+           throw err
+        }
+    type: JenkinsPipeline
+  triggers:
+  - github:
+      secret: secret101
+    type: GitHub
+  - generic:
+      secret: secret101
+    type: Generic
