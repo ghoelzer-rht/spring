@@ -4,7 +4,6 @@ metadata:
   annotations:
     pipeline.alpha.openshift.io/uses: '[{"name": "product-catalog", "namespace": "",
       "kind": "DeploymentConfig"}]'
-  creationTimestamp: 2017-02-01T23:09:54Z
   labels:
     name: product-catalog-pipeline
   name: product-catalog-pipeline
