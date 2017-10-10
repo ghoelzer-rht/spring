@@ -5,8 +5,8 @@ metadata:
     pipeline.alpha.openshift.io/uses: '[{"name": "product-catalog", "namespace": "",
       "kind": "DeploymentConfig"}]'
   labels:
-    name: product-catalog-pipeline
-  name: product-catalog-pipeline
+    name: product-catalog-mvn-pipeline
+  name: product-catalog-mvn-pipeline
 spec:
   nodeSelector: null
   output: {}
