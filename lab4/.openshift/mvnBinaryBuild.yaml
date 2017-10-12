@@ -35,22 +35,21 @@ spec:
                 }
 
                 stage("Build Spring Boot JAR") {
-                  sh "mvn clean fabric8:deploy -Popenshift --file lab4/pom.xml"
+                  sh "mvn clean package -Popenshift --file lab4/pom.xml"
                   stash name:"jar", includes:"lab4/target/product-catalog.jar"
                 }
               }
 
               node {
-                /*  
-                stage("Build Image") {
-                  unstash name:"jar"
-                  sh "oc start-build product-catalog-s2i --from-file=target/product-catalog.jar"
-                  openshiftVerifyBuild bldCfg: "product-catalog-s2i", waitTime: '20', waitUnit: 'min'
-                }
                 stage("Deploy") {
                   openshiftDeploy deploymentConfig: "product-catalog"
                 }
-                */
+                stage("Smoke Test") {
+                  sh 'curl http://product-catalog-product-catalog-demo01.cloudapps.keyvan.com/admin/productlist | grep -i "Admin - Product List"'
+                }
+                stage("Tag Image") {
+                  openshiftTag alias: 'false', apiURL: '', authToken: '', destStream: 'product-catalog', destTag: 'next-release', destinationAuthToken: '', destinationNamespace: '', namespace: '', srcStream: 'product-catalog', srcTag: 'latest', verbose: 'false'
+                }
               }
            }
         } catch (err) {
